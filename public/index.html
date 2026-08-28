@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172b26">
+  <meta name="description" content="A private local dashboard for managing SMS on a TP-Link TL-MR100 router.">
+  <title>MR100 SMS Desk</title>
+  <script src="/theme-init.js"></script>
+  <link rel="stylesheet" href="/vendor/fontawesome/css/fontawesome.min.css">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/solid.min.css">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/regular.min.css">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <main id="loginView" class="login-shell">
+    <button id="loginThemeToggle" class="icon-button login-theme-toggle" type="button" aria-label="Switch to dark theme" title="Toggle theme">
+      <i class="fa-solid fa-moon"></i>
+    </button>
+    <section class="login-card" aria-labelledby="loginTitle">
+      <div class="brand-badge" aria-hidden="true">
+        <i class="fa-solid fa-sim-card"></i>
+      </div>
+      <p class="eyebrow">Local Router Workspace</p>
+      <h1 id="loginTitle" style="margin-top: 2%;">TP-Link MR100 SMS Desk</h1>
+      <p class="login-intro">Connect directly to your router. Credentials stay strictly local in memory.</p>
+      <form id="loginForm" class="login-form">
+        <label>
+          <span>Router Address</span>
+          <div class="input-with-icon">
+            <i class="fa-solid fa-network-wired"></i>
+            <input id="hostInput" name="host" value="192.168.0.1" autocomplete="url" spellcheck="false" required>
+          </div>
+        </label>
+        <div class="field-row">
+          <label>
+            <span>Username</span>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-user"></i>
+              <input id="usernameInput" name="username" value="admin" autocomplete="username" required>
+            </div>
+          </label>
+          <label>
+            <span>Password</span>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-lock"></i>
+              <input id="passwordInput" name="password" type="password" autocomplete="current-password" required>
+            </div>
+          </label>
+        </div>
+        <p id="loginError" class="form-error" role="alert" hidden></p>
+        <button id="loginButton" class="primary-button full-button" type="submit">
+          <span>Connect to Router</span>
+          <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </form>
+      <div class="privacy-note">
+        <span class="status-dot"></span> Local execution · Direct router protocol connection
+      </div>
+    </section>
+  </main>
+
+  <main id="appView" class="app-shell" hidden>
+    <aside class="sidebar">
+      <div class="wordmark">
+        <div class="brand-badge small" aria-hidden="true">
+          <i class="fa-solid fa-sim-card"></i>
+        </div>
+        <strong>SMS Desk</strong>
+      </div>
+      <button id="composeButton" class="compose-button" type="button">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <span>New Message</span>
+      </button>
+      <nav id="folderNav" class="folder-nav" aria-label="SMS folders">
+        <button class="folder-button active" type="button" data-box="inbox" aria-label="Inbox">
+          <i class="fa-solid fa-inbox nav-icon"></i>
+          <span>Inbox</span>
+          <b id="inboxCount">—</b>
+        </button>
+        <button class="folder-button" type="button" data-box="sent" aria-label="Sent">
+          <i class="fa-solid fa-paper-plane nav-icon"></i>
+          <span>Sent</span>
+          <b id="sentCount">—</b>
+        </button>
+        <button class="folder-button" type="button" data-box="drafts" aria-label="Drafts">
+          <i class="fa-solid fa-file-lines nav-icon"></i>
+          <span>Drafts</span>
+          <b id="draftsCount">—</b>
+        </button>
+      </nav>
+      <div class="router-card">
+        <div class="router-icon" aria-hidden="true">
+          <i class="fa-solid fa-tower-cell"></i>
+        </div>
+        <div class="router-info">
+          <strong id="routerModel">TP-Link MR100</strong>
+          <span id="routerHost">192.168.0.1</span>
+        </div>
+        <span class="online-pill"><i class="fa-solid fa-circle"></i></span>
+      </div>
+      <button id="logoutButton" class="text-button logout-btn" type="button">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Disconnect</span>
+      </button>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar">
+        <div class="topbar-title-group">
+          <h2 id="folderTitle">Inbox</h2>
+          <span class="eyebrow-badge" id="folderEyebrow">Messages</span>
+        </div>
+        <div class="topbar-actions">
+          <button id="themeToggle" class="icon-button theme-toggle" type="button" aria-label="Switch to dark theme" title="Toggle theme">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <button id="refreshButton" class="icon-button" type="button" aria-label="Refresh messages" title="Refresh">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+          <button id="mobileComposeButton" class="primary-button mobile-compose" type="button">
+            <i class="fa-solid fa-plus"></i>
+            <span>New</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="message-workspace">
+        <section class="message-column" aria-label="Message list">
+          <div class="list-meta">
+            <label class="select-page">
+              <input id="selectPage" type="checkbox">
+              <span>Select</span>
+            </label>
+            <span id="messageTotal">Loading…</span>
+            <span id="pageLabel"></span>
+            <button id="deleteAllButton" class="delete-all-button" type="button">
+              <i class="fa-solid fa-trash-can"></i> Empty
+            </button>
+          </div>
+          <div id="batchToolbar" class="batch-toolbar" hidden>
+            <strong id="selectedCount">0 selected</strong>
+            <div>
+              <button id="clearSelectionButton" class="text-button" type="button">
+                <i class="fa-solid fa-xmark"></i> Clear
+              </button>
+              <button id="batchDeleteButton" class="danger-button" type="button">
+                <i class="fa-solid fa-trash-can"></i> Delete
+              </button>
+            </div>
+          </div>
+          <div id="messageList" class="message-list" aria-live="polite"></div>
+          <div id="emptyState" class="empty-state" hidden>
+            <div class="empty-orbit" aria-hidden="true">
+              <i class="fa-solid fa-inbox"></i>
+            </div>
+            <h3>No messages</h3>
+            <p>This folder is empty. Click refresh or compose a new SMS.</p>
+          </div>
+          <div id="listSkeleton" class="list-skeleton">
+            <i></i><i></i><i></i><i></i>
+          </div>
+          <footer id="paginationFooter" class="pagination">
+            <button id="prevPage" type="button" aria-label="Previous page">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span id="paginationText">Page 1</span>
+            <button id="nextPage" type="button" aria-label="Next page">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </footer>
+        </section>
+
+        <article id="messageDetail" class="message-detail" aria-live="polite">
+          <div id="detailPlaceholder" class="detail-placeholder">
+            <div class="detail-glyph" aria-hidden="true">
+              <i class="fa-solid fa-envelope-open-text"></i>
+            </div>
+            <h3>Select a message</h3>
+            <p>Choose an item from the list to view full content.</p>
+          </div>
+          <div id="detailContent" hidden>
+            <header class="detail-header">
+              <button id="backToList" class="back-button" type="button">
+                <i class="fa-solid fa-arrow-left"></i> Back
+              </button>
+              <div class="avatar" id="detailAvatar">A</div>
+              <div class="detail-address">
+                <span id="detailLabel">From</span>
+                <h3 id="detailAddress" dir="auto"></h3>
+                <time id="detailTime"></time>
+              </div>
+              <button id="deleteButton" class="danger-button" type="button">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Delete</span>
+              </button>
+            </header>
+            <div class="chat-stage">
+              <div id="detailBody" class="chat-bubble" dir="auto"></div>
+              <span id="bubbleStatus" class="bubble-status"></span>
+            </div>
+            <footer class="detail-actions">
+              <button id="replyButton" class="secondary-button" type="button">
+                <i class="fa-solid fa-reply"></i>
+                <span>Reply</span>
+              </button>
+              <button id="copyButton" class="text-button" type="button">
+                <i class="fa-solid fa-copy"></i>
+                <span>Copy</span>
+              </button>
+            </footer>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="composeDialog" class="compose-dialog">
+    <form id="composeForm" method="dialog">
+      <header>
+        <div>
+          <p class="eyebrow">Compose</p>
+          <h2>New Message</h2>
+        </div>
+        <button id="closeCompose" class="icon-button" type="button" aria-label="Close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </header>
+      <label>
+        <span>To</span>
+        <input id="recipientInput" name="to" inputmode="tel" autocomplete="tel" placeholder="Phone number" required>
+      </label>
+      <label class="message-field">
+        <span>Message</span>
+        <textarea id="messageInput" name="content" rows="6" placeholder="Type your message…" required></textarea>
+      </label>
+      <div class="composer-meta">
+        <span id="encodingLabel">GSM-7</span>
+        <span id="characterCount">0 / 160 · 1 part</span>
+      </div>
+      <p id="composeError" class="form-error" role="alert" hidden></p>
+      <footer>
+        <button id="saveDraftButton" class="secondary-button" type="button">
+          <i class="fa-solid fa-floppy-disk"></i> Save draft
+        </button>
+        <button id="sendButton" class="primary-button" type="submit">
+          <span>Send message</span>
+          <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+        </button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="confirmDialog" class="confirm-dialog">
+    <form id="confirmForm" method="dialog">
+      <div class="warning-mark" aria-hidden="true">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h2 id="confirmTitle">Delete messages?</h2>
+      <p id="confirmMessage"></p>
+      <label id="confirmPhraseField" hidden>
+        <span id="confirmPhraseLabel"></span>
+        <input id="confirmPhraseInput" autocomplete="off" spellcheck="false">
+      </label>
+      <footer>
+        <button id="cancelConfirm" class="secondary-button" type="button">Cancel</button>
+        <button id="acceptConfirm" class="danger-solid-button" type="submit">
+          <i class="fa-solid fa-trash-can"></i> Delete
+        </button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

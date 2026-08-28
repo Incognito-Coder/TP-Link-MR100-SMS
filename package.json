@@ -1,0 +1,24 @@
+{
+  "name": "mr100-sms-manager",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local web interface for managing SMS on TP-Link TL-MR100 routers",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test",
+    "vendor:assets": "node scripts/vendor-assets.mjs",
+    "build": "node scripts/build-standalone.mjs",
+    "build:exe": "npm run build",
+    "test:binary": "node scripts/smoke-binary.mjs",
+    "release:notes": "node scripts/release-notes.mjs"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "6.5.1",
+    "esbuild": "0.28.2"
+  }
+}
